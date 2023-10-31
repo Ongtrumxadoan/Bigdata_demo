@@ -1,0 +1,34 @@
+from pyspark.sql import SparkSession
+from pyspark.ml.fpm import FPGrowth
+
+# Khởi tạo phiên Spark
+spark = SparkSession.builder.appName("FPGrowthDemo").getOrCreate()
+
+# Tạo DataFrame mẫu chứa danh sách giao dịch
+data = [(1, ["apple", "bread", "milk"]),
+        (2, ["bread", "milk"]),
+        (3, ["apple", "bread", "milk", "cookie"]),
+        (4, ["apple", "milk", "cookie"]),
+        (5, ["banana", "bread", "milk"]),
+        (6, ["banana", "bread"]),
+        (7, ["banana", "milk"]),
+        (8, ["apple", "bread", "milk"])]
+
+columns = ["transaction_id", "items"]
+
+df = spark.createDataFrame(data, columns)
+
+# Hiển thị dữ liệu giao dịch
+df.show()
+
+# Sử dụng FP-Growth để tìm các tập mục thường xuyên
+fp_growth = FPGrowth(itemsCol="items", minSupport=0.2, minConfidence=0.6)
+model = fp_growth.fit(df)
+
+# Hiển thị tập hợp các mục thường xuyên
+frequent_itemsets = model.freqItemsets
+frequent_itemsets.show()
+
+# Hiển thị quy tắc liên kết
+association_rules = model.associationRules
+association_rules.show()
